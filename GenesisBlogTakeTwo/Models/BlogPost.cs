@@ -1,5 +1,6 @@
 ﻿using GenesisBlogTakeTwo.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GenesisBlogTakeTwo.Models
 {
@@ -32,8 +33,11 @@ namespace GenesisBlogTakeTwo.Models
 
         public BlogPostState BlogPostState { get; set; }
 
+        // Image properties
         public byte[] ImageData { get; set; } = Array.Empty<byte>();
         public string ImageType { get; set; } = string.Empty;
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }
 
 
         // Navigational Properties

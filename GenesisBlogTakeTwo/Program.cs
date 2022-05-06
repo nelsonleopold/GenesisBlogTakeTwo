@@ -1,5 +1,7 @@
 using GenesisBlogTakeTwo.Data;
 using GenesisBlogTakeTwo.Models;
+using GenesisBlogTakeTwo.Services;
+using GenesisBlogTakeTwo.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +17,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<BlogUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Custom Services
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllersWithViews();
 
