@@ -27,12 +27,13 @@
 
             <div class="form-group">
                 <label asp-for="Content" class="control-label"></label>
-                <div id="quillEditor"></div>
                 <input type="hidden" asp-for="Content" />
+                <div id="quillEditor"></div>
+
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
 
-             <div class="form-group">
+            <div class="form-group">
                 <label asp-for="Slug" class="control-label"></label>
                 <input asp-for="Slug" class="form-control" />
                 <span asp-validation-for="Slug" class="text-danger"></span>
@@ -44,7 +45,7 @@
                 <span asp-validation-for="BlogPostState" class="text-danger"></span>
             </div>
 
-             <div class="form-group">
+            <div class="form-group">
                 <label asp-for="ImageFile" class="control-label"></label>
                 <input asp-for="ImageFile" class="form-control" accept=".png,.jpg,.jpeg,.gif"
                             onchange="document.getElementById('contactImage').src = window.URL.createObjectURL(this.files[0])" />
