@@ -36,11 +36,14 @@ namespace GenesisBlogTakeTwo.Models
         // Image properties
         public byte[] ImageData { get; set; } = Array.Empty<byte>();
         public string ImageType { get; set; } = string.Empty;
+
         [NotMapped]
         public IFormFile? ImageFile { get; set; }
 
 
         // Navigational Properties
         public virtual ICollection<BlogPostComment> BlogPostComments { get; set; } = new HashSet<BlogPostComment>();
+
+        public virtual ICollection<Tag> Tags { get; set; } = new HashSet<Tag>();
     }
 }

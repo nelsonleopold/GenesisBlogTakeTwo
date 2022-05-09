@@ -28,7 +28,8 @@ namespace GenesisBlogTakeTwo.Controllers
         // GET: BlogPosts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.BlogPost.ToListAsync());
+            var blogPost = await _context.BlogPost.Include(b => b.Tags).ToListAsync();
+            return View(blogPost);
         }
 
         // GET: BlogPosts/Details/5
@@ -52,6 +53,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // GET: BlogPosts/Create
         public IActionResult Create()
         {
+            ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text");
             ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
             return View();
         }
@@ -61,10 +63,18 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,BlogPostState,ImageData,ImageType,ImageFile")] BlogPost blogPost)
+        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
         {
             if (ModelState.IsValid)
             {
+                // verigy that IFormFile isn't null before interacting with it
+                if(theImage is not null)
+                {
+                    blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(theImage);
+                    blogPost.ImageType = theImage.ContentType;
+                }
+
+
                 // when using quill rich text editor, content will never be an empty string because
                 // quill auto inserts <p><br></p>; it will replace the <br> tag with whatever is 
                 // entered by the user; so this is a check for no data being entered by user. Should
@@ -77,11 +87,11 @@ namespace GenesisBlogTakeTwo.Controllers
 
                 blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
 
-                //TODO: Image Service
-                if (blogPost.ImageFile != null)
+                // Associate any/all tags with the BlogPost
+                foreach (var tagId in tagIds)
                 {
-                    blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
-                    blogPost.ImageType = blogPost.ImageFile.ContentType;
+                    // do something...
+                    blogPost.Tags.Add(await _context.Tag.FindAsync(tagId));
                 }
 
                 _context.Add(blogPost);
@@ -100,12 +110,18 @@ namespace GenesisBlogTakeTwo.Controllers
                 return NotFound();
             }
 
-            var blogPost = await _context.BlogPost.FindAsync(id);
+            var blogPost = await _context.BlogPost.Include(b => b.Tags)
+                                                  .FirstOrDefaultAsync(b => b.Id == id);
+
             if (blogPost == null)
             {
                 return NotFound();
             }
 
+            //4th parameter in a multiSelect list is a List<int> representing the current selections
+            var selectedTags = blogPost.Tags.Select(b => b.Id).ToList();
+
+            ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", selectedTags);
             ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
             return View(blogPost);
         }
@@ -115,7 +131,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,BlogPostState,ImageData,ImageType,ImageFile")] BlogPost blogPost)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,Slug,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
         {
             if (id != blogPost.Id)
             {
@@ -126,18 +142,38 @@ namespace GenesisBlogTakeTwo.Controllers
             {
                 try
                 {
-                    blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
-                    blogPost.Updated = DateTime.UtcNow;
+                    var existingPost = await _context.BlogPost.Include(b => b.Tags)
+                                                              .FirstOrDefaultAsync(b => b.Id == blogPost.Id);
 
-                    //TODO: Image Service
-                    if (blogPost.ImageFile != null)
+                    foreach (var tag in existingPost.Tags)
                     {
-                        blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
-                        blogPost.ImageType = blogPost.ImageFile.ContentType;
+                        existingPost.Tags.Remove(tag);
+                    }
+                    await _context.SaveChangesAsync();
+
+                    existingPost.Updated = blogPost.Updated;
+                    existingPost.Title = blogPost.Title;
+                    existingPost.Abstract = blogPost.Abstract;
+                    existingPost.Content = blogPost.Content;
+                    existingPost.BlogPostState = blogPost.BlogPostState;
+
+                    //blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
+                    //blogPost.Updated = DateTime.UtcNow;
+
+                    ////TODO: Image Service
+                    if (theImage is not null)
+                    {
+                        existingPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(theImage);
+                        existingPost.ImageType = theImage.ContentType;
                     }
 
-                    _context.Update(blogPost);
+                    foreach (var tagId in tagIds)
+                    {
+                        existingPost.Tags.Add(await _context.Tag.FindAsync(tagId));
+                    }
+
                     await _context.SaveChangesAsync();
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {

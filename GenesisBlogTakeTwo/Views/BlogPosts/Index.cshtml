@@ -16,6 +16,9 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.ImageData)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Title)
             </th>
             <th>
@@ -25,22 +28,10 @@
                 @Html.DisplayNameFor(model => model.Content)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Created)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Updated)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Slug)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.BlogPostState)
-            </th>
+            </th>           
             <th>
-                @Html.DisplayNameFor(model => model.ImageData)
+                @Html.DisplayNameFor(model => model.Tags)
             </th>
             <th></th>
         </tr>
@@ -49,6 +40,9 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>
+                    <img style="height: 120px; width:120px" class="img-fluid img-thumbnail mt-2" src="@ImageService.ConvertByteArrayToFile(item.ImageData, item.ImageType)" />
+                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
@@ -59,22 +53,13 @@
                     @Html.Raw(item.Content)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Created)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Updated)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Slug)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsDeleted)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.BlogPostState)
                 </td>
                 <td>
-                    <img style="height: 120px; width:120px" class="img-fluid img-thumbnail mt-2" src="@ImageService.ConvertByteArrayToFile(item.ImageData, item.ImageType)" />
+                    @foreach (Tag tag in item.Tags)
+                    {
+                        <p>@tag.Text</p>
+                    }
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
