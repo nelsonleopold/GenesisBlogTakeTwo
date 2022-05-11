@@ -10,6 +10,7 @@ using GenesisBlogTakeTwo.Data;
 using GenesisBlogTakeTwo.Models;
 using GenesisBlogTakeTwo.Enums;
 using GenesisBlogTakeTwo.Services.Interfaces;
+using GenesisBlogTakeTwo.Utilities;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
@@ -17,12 +18,15 @@ namespace GenesisBlogTakeTwo.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
+        private readonly SlugService _slugService;
 
-        public BlogPostsController(ApplicationDbContext context, 
-                                   IImageService imageService)
+        public BlogPostsController(ApplicationDbContext context,
+                                   IImageService imageService, 
+                                   SlugService slugService)
         {
             _context = context;
             _imageService = imageService;
+            _slugService = slugService;
         }
 
         // GET: BlogPosts
@@ -63,17 +67,21 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
+        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
         {
+            ModelState.Remove("Slug");
+
+            // why doesn't this work??? maybe it hasn't been saved yet? or the ModelState is captured before the slugservice can run?
+            // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
+
             if (ModelState.IsValid)
-            {
-                // verigy that IFormFile isn't null before interacting with it
+                {
+                // verify that IFormFile isn't null before interacting with it
                 if(theImage is not null)
                 {
                     blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(theImage);
                     blogPost.ImageType = theImage.ContentType;
                 }
-
 
                 // when using quill rich text editor, content will never be an empty string because
                 // quill auto inserts <p><br></p>; it will replace the <br> tag with whatever is 
@@ -82,10 +90,30 @@ namespace GenesisBlogTakeTwo.Controllers
                 if (blogPost.Content == "<p><br></p>")
                 {
                     ModelState.AddModelError("Content", "Sorry, you must enter something for content");
-                    return View(blogPost);
+                    return RedirectToAction(nameof(Create));
                 }
 
+                // these are generated programmatically
                 blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
+                // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
+                // get a list of all slugs
+                List<string> slugs = await _context.BlogPost.Select(b => b.Slug).ToListAsync();
+                // check if slug is unique
+                // check if List<string> slugs is null or empty?
+
+                // loop over List<string> slugs and check for uniqueness
+                foreach (string slug in slugs)
+                {
+                    if (blogPost.Slug != slug)
+                    {
+                        blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("Title", "Sorry, you must enter something for title");
+                        return RedirectToAction(nameof(Create));
+                    }
+                }
 
                 // Associate any/all tags with the BlogPost
                 foreach (var tagId in tagIds)
@@ -99,7 +127,8 @@ namespace GenesisBlogTakeTwo.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            return View(blogPost);
+            // if bad data is entered in create, then this breaks
+            return RedirectToAction(nameof(Create));
         }
 
         // GET: BlogPosts/Edit/5
@@ -131,12 +160,14 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,Slug,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
         {
             if (id != blogPost.Id)
             {
                 return NotFound();
             }
+
+            ModelState.Remove("Slug");
 
             if (ModelState.IsValid)
             {
@@ -156,9 +187,25 @@ namespace GenesisBlogTakeTwo.Controllers
                     existingPost.Abstract = blogPost.Abstract;
                     existingPost.Content = blogPost.Content;
                     existingPost.BlogPostState = blogPost.BlogPostState;
+                    existingPost.Updated = DateTime.UtcNow;
 
-                    //blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
-                    //blogPost.Updated = DateTime.UtcNow;
+                    // get a list of all slugs
+                    List<string> slugs = await _context.BlogPost.Select(b => b.Slug).ToListAsync();
+                    // check if slug is unique
+
+                    // loop over List<string> slugs and check for uniqueness
+                    foreach (string slug in slugs)
+                    {
+                        if (blogPost.Slug != slug)
+                        {
+                            existingPost.Slug = _slugService.URLFriendly(blogPost.Title);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("Title", "Sorry, you must enter something for title");
+                            return RedirectToAction(nameof(Create));
+                        }
+                    }
 
                     ////TODO: Image Service
                     if (theImage is not null)

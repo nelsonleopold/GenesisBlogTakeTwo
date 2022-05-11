@@ -10,8 +10,8 @@ namespace GenesisBlogTakeTwo.Data
             : base(options)
         {
         }
-        public DbSet<BlogPost> BlogPost { get; set; }
-        public DbSet<BlogPostComment> BlogPostComment { get; set; }
-        public DbSet<Models.Tag> Tag { get; set; }
+        public DbSet<BlogPost> BlogPost { get; set; } = default!;
+        public DbSet<BlogPostComment> BlogPostComment { get; set; } = default!;
+        public DbSet<Models.Tag> Tag { get; set; } = default!;
     }
 }

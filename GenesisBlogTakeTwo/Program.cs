@@ -2,6 +2,7 @@ using GenesisBlogTakeTwo.Data;
 using GenesisBlogTakeTwo.Models;
 using GenesisBlogTakeTwo.Services;
 using GenesisBlogTakeTwo.Services.Interfaces;
+using GenesisBlogTakeTwo.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,7 @@ builder.Services.AddDefaultIdentity<BlogUser>(options => options.SignIn.RequireC
 
 // Custom Services
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<SlugService>();
 
 builder.Services.AddControllersWithViews();
 
