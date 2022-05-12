@@ -21,7 +21,7 @@ namespace GenesisBlogTakeTwo.Controllers
         private readonly SlugService _slugService;
 
         public BlogPostsController(ApplicationDbContext context,
-                                   IImageService imageService, 
+                                   IImageService imageService,
                                    SlugService slugService)
         {
             _context = context;
@@ -44,8 +44,9 @@ namespace GenesisBlogTakeTwo.Controllers
                 return NotFound();
             }
 
-            var blogPost = await _context.BlogPost
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var blogPost = await _context.BlogPost.Include(b => b.BlogPostComments)
+                                                    .ThenInclude(c => c.Author)
+                                                  .FirstOrDefaultAsync(m => m.Id == id);
             if (blogPost == null)
             {
                 return NotFound();
@@ -67,7 +68,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
+        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, List<int> tagIds)
         {
             ModelState.Remove("Slug");
 
@@ -75,12 +76,12 @@ namespace GenesisBlogTakeTwo.Controllers
             // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
 
             if (ModelState.IsValid)
-                {
+            {
                 // verify that IFormFile isn't null before interacting with it
-                if(theImage is not null)
+                if (blogPost.ImageFile is not null)
                 {
-                    blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(theImage);
-                    blogPost.ImageType = theImage.ContentType;
+                    blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
+                    blogPost.ImageType = blogPost.ImageFile.ContentType;
                 }
 
                 // when using quill rich text editor, content will never be an empty string because
@@ -89,8 +90,10 @@ namespace GenesisBlogTakeTwo.Controllers
                 // refactor this into a _configuration setting?
                 if (blogPost.Content == "<p><br></p>")
                 {
-                    ModelState.AddModelError("Content", "Sorry, you must enter something for content");
-                    return RedirectToAction(nameof(Create));
+                    ModelState.AddModelError("Content", "The Content field is required.");
+                    ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                    ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                    return View(blogPost);
                 }
 
                 // these are generated programmatically
@@ -104,14 +107,16 @@ namespace GenesisBlogTakeTwo.Controllers
                 // loop over List<string> slugs and check for uniqueness
                 foreach (string slug in slugs)
                 {
-                    if (blogPost.Slug != slug)
+                    if (slug == string.Empty || blogPost.Slug != slug)
                     {
                         blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
                     }
                     else
                     {
-                        ModelState.AddModelError("Title", "Sorry, you must enter something for title");
-                        return RedirectToAction(nameof(Create));
+                        ModelState.AddModelError("Title", "The Title must be unique.");
+                        ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                        ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                        return View(blogPost);
                     }
                 }
 
@@ -127,8 +132,8 @@ namespace GenesisBlogTakeTwo.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            // if bad data is entered in create, then this breaks
-            return RedirectToAction(nameof(Create));
+            // data should persist even if ModelState is invalid
+            return View(blogPost);
         }
 
         // GET: BlogPosts/Edit/5

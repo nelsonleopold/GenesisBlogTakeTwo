@@ -9,60 +9,61 @@
 <h4>BlogPost</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
         <form asp-action="Create" enctype="multipart/form-data">
-            
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <label asp-for="Abstract" class="control-label"></label>
                 <textarea asp-for="Abstract" class="form-control" rows=4></textarea>
                 <span asp-validation-for="Abstract" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="col-md-8 form-group mb-3">
                 <label asp-for="Content" class="control-label"></label>
                 
                 <div id="quillEditor">
-                    @if(Model != null)
-                    {
-                        @Html.Raw(Model.Content);
-                    }
+                        @if (Model != null)
+                        {
+                            @Html.Raw(Model.Content);
+                        } 
                 </div>
-                <input type="hidden" asp-for="Content" />
                 <span asp-validation-for="Content" class="text-danger"></span>
+                <input type="hidden" asp-for="Content" />
+
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <label asp-for="BlogPostState" class="control-label"></label>
                 <select asp-for="BlogPostState" asp-items="ViewBag.BlogPostStatesList" class="form-control"></select>
                 <span asp-validation-for="BlogPostState" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <label asp-for="ImageFile" class="control-label"></label>
-                <input name="TheImage" type="file" class="form-control" accept=".png,.jpg,.jpeg,.gif" 
-                onchange="document.getElementById('defaultImage').src = window.URL.createObjectURL(this.files[0])" />
+                <input asp-for="ImageFile" class="form-control" accept=".png,.jpg,.jpeg,.gif"
+                       onchange="document.getElementById('defaultImage').src = window.URL.createObjectURL(this.files[0])" />
                 <span asp-validation-for="ImageFile" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <img id="defaultImage" class="img-fluid img-thumbnail mt-2" style="width:120px;height:120px" src="https://cdn.icon-icons.com/icons2/233/PNG/512/Contacts_26253.png">
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <label asp-for="Tags" class="control-label"></label>
-                <select name="TagIds" class ="form-control" asp-items="ViewBag.TagIds" multiple></select>
-                @*<span asp-validation-for="Tags" class="text-danger"></span>*@
+                <select name="TagIds" class="form-control" asp-items="ViewBag.TagIds" multiple></select>
+                <span asp-validation-for="Tags" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="col-md-4 form-group mb-3">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -74,7 +75,9 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
     <script>
         document.querySelector("form").addEventListener("submit", function() {

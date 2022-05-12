@@ -20,5 +20,8 @@ namespace GenesisBlogTakeTwo.Models
         public string? FullName { get { return $"{FirstName} {LastName}"; } }
 
         public string? NickName { get; set; }
+
+        // Navigational property this is a one to many relationship one User, many Comments
+        public virtual ICollection<BlogPostComment> BlogPostComments { get; set; } = new HashSet<BlogPostComment>();
     }
 }

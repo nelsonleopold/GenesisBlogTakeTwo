@@ -6,6 +6,10 @@ namespace GenesisBlogTakeTwo.Models
     {
         public int Id { get; set; }
         public int BlogPostId { get; set; }
+        public string AuthorId { get; set; } = Guid.Empty.ToString();
+
+        public DateTime Created { get; set; }
+
 
         [Required]
         public string Comment { get; set; } = string.Empty;
@@ -14,6 +18,8 @@ namespace GenesisBlogTakeTwo.Models
 
 
         // Navigational Properties
-        public virtual BlogPost BlogPost { get; set; } = default!;
+        public virtual BlogPost? BlogPost { get; set; }
+        public virtual BlogUser? Author { get; set; }
+
     }
 }
