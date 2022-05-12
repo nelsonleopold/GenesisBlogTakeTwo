@@ -44,7 +44,8 @@ namespace GenesisBlogTakeTwo.Controllers
                 return NotFound();
             }
 
-            var blogPost = await _context.BlogPost.Include(b => b.BlogPostComments)
+            var blogPost = await _context.BlogPost.Include(b => b.Tags)
+                                                  .Include(b => b.BlogPostComments)
                                                     .ThenInclude(c => c.Author)
                                                   .FirstOrDefaultAsync(m => m.Id == id);
             if (blogPost == null)

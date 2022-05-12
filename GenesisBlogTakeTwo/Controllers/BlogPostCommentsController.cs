@@ -39,9 +39,9 @@ namespace GenesisBlogTakeTwo.Controllers
                 return NotFound();
             }
 
-            var blogPostComment = await _context.BlogPostComment
-                .Include(b => b.BlogPost)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var blogPostComment = await _context.BlogPostComment.Include(b => b.BlogPost)
+                                                                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (blogPostComment == null)
             {
                 return NotFound();
@@ -49,13 +49,6 @@ namespace GenesisBlogTakeTwo.Controllers
 
             return View(blogPostComment);
         }
-
-        //// GET: BlogPostComments/Create
-        //public IActionResult Create()
-        //{
-        //    ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract");
-        //    return View();
-        //}
 
         // POST: BlogPostComments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
