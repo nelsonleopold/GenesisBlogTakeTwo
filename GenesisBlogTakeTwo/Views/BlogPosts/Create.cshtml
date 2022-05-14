@@ -1,4 +1,7 @@
-﻿@model GenesisBlogTakeTwo.Models.BlogPost
+﻿@using GenesisBlogTakeTwo.Services.Interfaces
+@model GenesisBlogTakeTwo.Models.BlogPost
+
+@inject IImageService ImageService
 
 @{
     ViewData["Title"] = "Create";
@@ -10,7 +13,7 @@
 <hr />
 <div class="row">
     <div class="col-md-12">
-        <form asp-action="Create" enctype="multipart/form-data">
+        <form id="quillForm" asp-action="Create" enctype="multipart/form-data">
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -28,15 +31,15 @@
 
             <div class="col-md-8 form-group mb-3">
                 <label asp-for="Content" class="control-label"></label>
-                
+
                 <div id="quillEditor">
-                        @if (Model != null)
-                        {
-                            @Html.Raw(Model.Content);
-                        } 
+                    @if (Model != null)
+                    {
+                        @Html.Raw(Model.Content)
+                    }
                 </div>
                 <span asp-validation-for="Content" class="text-danger"></span>
-                <input type="hidden" asp-for="Content" />
+                <input type="text" asp-for="Content" />
 
             </div>
 
@@ -80,7 +83,7 @@
     }
 
     <script>
-        document.querySelector("form").addEventListener("submit", function() {
+        document.getElementById("quillForm").addEventListener("submit", function() {
             document.getElementById("Content").value = quill.container.firstChild.innerHTML;
         })
     </script>

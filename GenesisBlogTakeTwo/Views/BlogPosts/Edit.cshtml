@@ -13,11 +13,10 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data">
+        <form id="quillForm" asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <input type="hidden" asp-for="Id" />
-            @*<input type="hidden" asp-for="IsDeleted" />*@
 
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
@@ -79,7 +78,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-        document.querySelector("form").addEventListener("submit", function() {
+        document.getElementById("quillForm").addEventListener("submit", function() {
             document.getElementById("Content").value = quill.container.firstChild.innerHTML;
         })
     </script>

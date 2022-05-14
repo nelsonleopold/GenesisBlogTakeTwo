@@ -4,10 +4,6 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-clean-blog/blob/master/LICENSE)
 */
 
-var quill = new Quill('#quillEditor', {
-    theme: 'snow'
-});
-
 window.addEventListener('DOMContentLoaded', () => {
     let scrollPos = 0;
     const mainNav = document.getElementById('mainNav');

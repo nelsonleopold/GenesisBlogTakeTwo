@@ -11,6 +11,7 @@ using GenesisBlogTakeTwo.Models;
 using GenesisBlogTakeTwo.Enums;
 using GenesisBlogTakeTwo.Services.Interfaces;
 using GenesisBlogTakeTwo.Utilities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
@@ -57,10 +58,12 @@ namespace GenesisBlogTakeTwo.Controllers
         }
 
         // GET: BlogPosts/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text");
             ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+            
             return View();
         }
 
@@ -166,7 +169,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, IFormFile theImage, List<int> tagIds)
         {
             if (id != blogPost.Id)
             {
@@ -193,6 +196,7 @@ namespace GenesisBlogTakeTwo.Controllers
                     existingPost.Abstract = blogPost.Abstract;
                     existingPost.Content = blogPost.Content;
                     existingPost.BlogPostState = blogPost.BlogPostState;
+
                     existingPost.Updated = DateTime.UtcNow;
 
                     // get a list of all slugs
@@ -218,6 +222,18 @@ namespace GenesisBlogTakeTwo.Controllers
                     {
                         existingPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(theImage);
                         existingPost.ImageType = theImage.ContentType;
+                    }
+
+                    // when using quill rich text editor, content will never be an empty string because
+                    // quill auto inserts <p><br></p>; it will replace the <br> tag with whatever is 
+                    // entered by the user; so this is a check for no data being entered by user. Should
+                    // refactor this into a _configuration setting?
+                    if (existingPost.Content == "<p><br></p>")
+                    {
+                        ModelState.AddModelError("Content", "The Content field is required.");
+                        ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                        ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                        return View(blogPost);
                     }
 
                     foreach (var tagId in tagIds)

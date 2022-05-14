@@ -16,16 +16,28 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<BlogUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//builder.Services.AddDefaultIdentity<BlogUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddDefaultTokenProviders()
+    .AddDefaultUI()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Custom Services
+builder.Services.AddTransient<DataService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<SlugService>();
+
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Use custom service
+var scope = app.Services.CreateScope();
+var dataService = scope.ServiceProvider.GetRequiredService<DataService>();
+await dataService.SetupDbAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
