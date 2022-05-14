@@ -97,7 +97,7 @@ namespace GenesisBlogTakeTwo.Controllers
                     ModelState.AddModelError("Content", "The Content field is required.");
                     ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
                     ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
-                    return View(blogPost);
+                    return View();
                 }
 
                 // these are generated programmatically
