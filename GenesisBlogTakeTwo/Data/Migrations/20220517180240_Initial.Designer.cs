@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GenesisBlogTakeTwo.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220512151243_CommentsDateTimeCreated")]
-    partial class CommentsDateTimeCreated
+    [Migration("20220517180240_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -109,6 +109,24 @@ namespace GenesisBlogTakeTwo.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("ModReason")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Moderated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModeratedComment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModeratorId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -296,12 +314,10 @@ namespace GenesisBlogTakeTwo.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
@@ -338,12 +354,10 @@ namespace GenesisBlogTakeTwo.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");

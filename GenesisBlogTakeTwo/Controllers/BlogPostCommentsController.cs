@@ -64,28 +64,28 @@ namespace GenesisBlogTakeTwo.Controllers
 
                 _context.Add(blogPostComment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "BlogPosts", new {Id = blogPostComment.BlogPostId});
+                return RedirectToAction("Details", "BlogPosts", new {Id = blogPostComment.BlogPostId}, "ScrollTo");
             }
             ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
             return View(blogPostComment);
         }
 
         // GET: BlogPostComments/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //public async Task<IActionResult> Edit(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var blogPostComment = await _context.BlogPostComment.FindAsync(id);
-            if (blogPostComment == null)
-            {
-                return NotFound();
-            }
-            ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
-            return View(blogPostComment);
-        }
+        //    var blogPostComment = await _context.BlogPostComment.FindAsync(id);
+        //    if (blogPostComment == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
+        //    return View(blogPostComment);
+        //}
 
         // POST: BlogPostComments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -103,8 +103,12 @@ namespace GenesisBlogTakeTwo.Controllers
             {
                 try
                 {
-                    _context.Update(blogPostComment);
+                    var existingComment = await _context.BlogPostComment.FindAsync(blogPostComment.Id);
+                    existingComment.Comment = blogPostComment.Comment;
+                    existingComment.Updated = DateTime.UtcNow;
+                    // _context.Update(blogPostComment);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction("Details", "BlogPosts", new { id = existingComment.BlogPostId });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -117,7 +121,47 @@ namespace GenesisBlogTakeTwo.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+            }
+            ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
+            return View(blogPostComment);
+        }
+
+        // POST: BlogPostComments/Moderate/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Moderate(int id, [Bind("Id,Comment,ModReason,ModeratedComment")] BlogPostComment blogPostComment)
+        {
+            if (id != blogPostComment.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingComment = await _context.BlogPostComment.FindAsync(blogPostComment.Id);
+                    existingComment.ModeratedComment = blogPostComment.ModeratedComment;
+                    existingComment.ModReason = blogPostComment.ModReason;
+                    existingComment.Moderated = DateTime.UtcNow;
+                    existingComment.ModeratorId = _userManager.GetUserId(User);
+                    
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Details", "BlogPosts", new { id = existingComment.BlogPostId }, "ScrollTo");
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BlogPostCommentExists(blogPostComment.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
             ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
             return View(blogPostComment);
@@ -131,9 +175,8 @@ namespace GenesisBlogTakeTwo.Controllers
                 return NotFound();
             }
 
-            var blogPostComment = await _context.BlogPostComment
-                .Include(b => b.BlogPost)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var blogPostComment = await _context.BlogPostComment.Include(b => b.BlogPost)
+                                                                .FirstOrDefaultAsync(m => m.Id == id);
             if (blogPostComment == null)
             {
                 return NotFound();

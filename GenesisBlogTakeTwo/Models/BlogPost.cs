@@ -26,8 +26,7 @@ namespace GenesisBlogTakeTwo.Models
 
         // This property is derived from the title and in some cases will be
         // used instead of primary key
-        [Required]
-        public string Slug { get; set; } = string.Empty;
+        public string? Slug { get; set; }
 
         public bool IsDeleted { get; set; }
 

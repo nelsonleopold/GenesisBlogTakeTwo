@@ -1,0 +1,45 @@
+﻿<!-- Main Content-->
+<main class="mb-4">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <p>Want to get in touch? Fill out the form below to send me a message and I will get back to you as soon as possible!</p>
+                <div class="my-5">
+
+                    <form id="contactForm" asp-controller="Home" asp-action="ContactMe">
+
+                        <div class="form-floating">
+                            <input class="form-control" name="Name" type="text" placeholder="Enter your name..." required />
+                            <label for="name">Name</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <input class="form-control" name="Email" type="email" placeholder="Enter your email..." required />
+                            <label for="email">Email address</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <input class="form-control" name="Phone" type="tel" placeholder="Enter your phone number..." />
+                            <label for="phone">Phone Number</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <input class="form-control" name="Subject" type="text" placeholder="Enter the subject..." />
+                            <label for="subject">Subject</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <textarea class="form-control" name="Message" placeholder="Enter your message here..." style="height: 12rem"></textarea>
+                            <label for="message">Message</label>
+                        </div>
+
+                        <br />
+
+                        <!-- Submit Button-->
+                        <button class="btn btn-primary text-uppercase" id="submitButton" type="submit">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

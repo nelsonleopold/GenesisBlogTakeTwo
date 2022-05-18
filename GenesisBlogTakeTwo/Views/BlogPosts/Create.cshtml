@@ -1,7 +1,9 @@
 ﻿@using GenesisBlogTakeTwo.Services.Interfaces
+@using GenesisBlogTakeTwo.Utilities
 @model GenesisBlogTakeTwo.Models.BlogPost
 
 @inject IImageService ImageService
+@inject SlugService SlugService
 
 @{
     ViewData["Title"] = "Create";
@@ -31,17 +33,18 @@
 
             <div class="col-md-8 form-group mb-3">
                 <label asp-for="Content" class="control-label"></label>
-
-                <div id="quillEditor">
-                    @if (Model != null)
-                    {
-                        @Html.Raw(Model.Content)
-                    }
-                </div>
+                @*this will change to type="hidden" in the final code*@
+                @*<input type="text" asp-for="Content" />*@
+                <textarea asp-for="Content" class="form-control" rows=4 required></textarea>
                 <span asp-validation-for="Content" class="text-danger"></span>
-                // this will change to type="hidden" in the final code
-                <input type="text" asp-for="Content" />
 
+
+                @*<div id="quillEditor">
+                        @if (Model != null)
+                        {
+                            @Html.Raw(Model.Content)
+                        }
+                </div>*@
             </div>
 
             <div class="col-md-4 form-group mb-3">
@@ -58,7 +61,15 @@
             </div>
 
             <div class="col-md-4 form-group mb-3">
-                <img id="defaultImage" class="img-fluid img-thumbnail mt-2" style="width:120px;height:120px" src="https://cdn.icon-icons.com/icons2/233/PNG/512/Contacts_26253.png">
+                @if (TempData.ContainsKey("ImageFile") && TempData["ImageFile"] is not null)
+                {
+                    <img id="defaultImage" class="img-fluid img-thumbnail mt-2" style="width:120px;height:120px" src="@ImageService.ConvertByteArrayToFile((byte[]) TempData["ImageData"], TempData["ImageType"].ToString())">
+                }
+                else
+                {
+                    <img id="defaultImage" class="img-fluid img-thumbnail mt-2" style="width:120px;height:120px" src="https://cdn.icon-icons.com/icons2/233/PNG/512/Contacts_26253.png">
+                }
+
             </div>
 
             <div class="col-md-4 form-group mb-3">
@@ -88,4 +99,37 @@
             document.getElementById("Content").value = quill.container.firstChild.innerHTML;
         })
     </script>
+
+    <script>
+    tinymce.init({
+      selector: 'textarea',
+        setup: function(editor) {
+            editor.on('change', function() {
+                tinymce.triggerSave();
+            });
+        }
+    });
+  </script>
 }
+@*
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tiny.cloud/1/t96sqqc8ah7p2fjpfopckjta8egmar3sx8pims7ir2usn41i/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+  <textarea>
+    Welcome to TinyMCE!
+  </textarea>
+  <script>
+    tinymce.init({
+      selector: 'textarea',
+      plugins: 'a11ychecker advcode casechange export formatpainter image editimage linkchecker autolink lists checklist media mediaembed pageembed permanentpen powerpaste table advtable tableofcontents tinycomments tinymcespellchecker',
+      toolbar: 'a11ycheck addcomment showcomments casechange checklist code export formatpainter image editimage pageembed permanentpen table tableofcontents',
+      toolbar_mode: 'floating',
+      tinycomments_mode: 'embedded',
+      tinycomments_author: 'Author name',
+    });
+  </script>
+</body>
+</html>*@

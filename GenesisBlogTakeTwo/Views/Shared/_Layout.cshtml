@@ -13,6 +13,9 @@
     <!-- Font Awesome icons (free version)-->
     <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>
 
+    <!-- Tiny Editor -->
+    <script src="https://cdn.tiny.cloud/1/t96sqqc8ah7p2fjpfopckjta8egmar3sx8pims7ir2usn41i/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
     <!-- Google fonts-->
     <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
@@ -25,6 +28,9 @@
 
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="~/css/styles.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link href="~/css/site.css" rel="stylesheet" />
 
 </head>
 <body>
@@ -40,13 +46,28 @@
                 <ul class="navbar-nav ms-auto py-4 py-lg-0">
                     <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About</a></li>
-                    @if(User.IsInRole("Admin"))
+                    @if (User.IsInRole("Admin"))
                     {
-                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="Index">Create Post</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="Create">Create A New Blog Post</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="Index">Manage Blog</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="InDevIndex">Blogs In Progress</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="InPreviewIndex">Blogs In Preview</a></li>
                     }
-                    <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="contact.html">Contact</a></li>
+                    else if (User.IsInRole("Moderator"))
+                    {
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPostComments" asp-action="ModeratedIndex">Moderated Comments</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPostComments" asp-action="DeletedIndex">Deleted Comments</a></li>
+                    }
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                    {
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPostComments" asp-action="Index">Manage Comments</a></li>
+                    }
+                    <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="Home" asp-action="ContactMe">Contact</a></li>
+                    <li class="nav-item"><a><partial name="_LoginPartial" /></a></li>
+                    
                 </ul>
-                <partial name="_LoginPartial" />
+                @*<partial name="_LoginPartial" />*@
             </div>
         </div>
     </nav>
@@ -59,10 +80,10 @@
                     <div class="site-heading">
                         <h2>@ViewBag.BlogPostTitle</h2>
                         <h5 class="subheading">@ViewBag.Abstract</h5>
-                        @if(ViewBag.Created is not null)
+                        @if (ViewBag.Created is not null)
                         {
                             <span class="h6">Created on: @ViewBag.Created</span>
-                        }                       
+                        }
                     </div>
                 </div>
             </div>
@@ -71,13 +92,13 @@
 
     <!-- Main Content-->
 
-    @RenderBody()
 
-    @*<div class="container">
+
+    <div class="container">
         <main role="main" class="pb-3">
-            
+            @RenderBody()
         </main>
-    </div>*@
+    </div>
 
 
     <!-- Footer-->

@@ -44,7 +44,7 @@
         {
             <tr>
                 <td>
-                    <img style="height: 120px; width:120px" class="img-fluid img-thumbnail mt-2" src="@ImageService.ConvertByteArrayToFile(item.ImageData, item.ImageType)" />
+                    <img style="height: 120px; width:120px" class="img-fluid img-thumbnail mt-2" src="@ImageService.ConvertByteArrayToFile(item.ImageData, item.ImageType)" />   @*@item.ImageFile*@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)

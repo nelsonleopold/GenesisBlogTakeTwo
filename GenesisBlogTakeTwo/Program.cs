@@ -4,6 +4,7 @@ using GenesisBlogTakeTwo.Services;
 using GenesisBlogTakeTwo.Services.Interfaces;
 using GenesisBlogTakeTwo.Utilities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,7 @@ builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.R
 builder.Services.AddTransient<DataService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<SlugService>();
+builder.Services.AddScoped<IEmailSender, BasicEmailService>();
 
 
 builder.Services.AddControllersWithViews();

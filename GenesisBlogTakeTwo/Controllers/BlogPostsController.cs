@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
+    [Authorize(Roles ="Admin,Moderator")]
     public class BlogPostsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -37,7 +38,26 @@ namespace GenesisBlogTakeTwo.Controllers
             return View(blogPost);
         }
 
+        // GET: BlogPosts in development state
+        public async Task<IActionResult> InDevIndex()
+        {
+            var blogPost = await _context.BlogPost.Include(b => b.Tags)
+                                                  .Where(b => b.BlogPostState == BlogPostState.InDevelopment)
+                                                  .ToListAsync();
+            return View("Index", blogPost);
+        }
+
+        // GET: BlogPosts in preview state
+        public async Task<IActionResult> InPreviewIndex()
+        {
+            var blogPost = await _context.BlogPost.Include(b => b.Tags)
+                                                  .Where(b => b.BlogPostState == BlogPostState.InPreview)
+                                                  .ToListAsync();
+            return View("Index", blogPost);
+        }
+
         // GET: BlogPosts/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -63,7 +83,9 @@ namespace GenesisBlogTakeTwo.Controllers
         {
             ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text");
             ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
-            
+            //TempData["ImageFile"] = blogPost.ImageFile;
+            //TempData["ImageData"] = blogPost.ImageData;
+            //TempData["ImageType"] = blogPost.ImageType;
             return View();
         }
 
@@ -74,11 +96,6 @@ namespace GenesisBlogTakeTwo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, List<int> tagIds)
         {
-            ModelState.Remove("Slug");
-
-            // why doesn't this work??? maybe it hasn't been saved yet? or the ModelState is captured before the slugservice can run?
-            // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
-
             if (ModelState.IsValid)
             {
                 // verify that IFormFile isn't null before interacting with it
@@ -97,32 +114,53 @@ namespace GenesisBlogTakeTwo.Controllers
                     ModelState.AddModelError("Content", "The Content field is required.");
                     ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
                     ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                    TempData["ImageFile"] = blogPost.ImageFile;
+                    TempData["ImageData"] = blogPost.ImageData;
+                    TempData["ImageType"] = blogPost.ImageType;
                     return View();
                 }
 
                 // these are generated programmatically
                 blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
+
                 // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
                 // get a list of all slugs
-                List<string> slugs = await _context.BlogPost.Select(b => b.Slug).ToListAsync();
-                // check if slug is unique
-                // check if List<string> slugs is null or empty?
-
-                // loop over List<string> slugs and check for uniqueness
-                foreach (string slug in slugs)
+                var slug = _slugService.URLFriendly(blogPost.Title);
+                if(_context.BlogPost.Any(b => b.Slug == slug))
                 {
-                    if (slug == string.Empty || blogPost.Slug != slug)
-                    {
-                        blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Title", "The Title must be unique.");
-                        ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
-                        ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
-                        return View(blogPost);
-                    }
+                    ModelState.AddModelError("Title", "The Title must be unique.");
+                    ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                    ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                    return View(blogPost);
                 }
+                else
+                {
+                    blogPost.Slug = slug;
+                }
+
+
+
+
+
+                //List<string> slugs = await _context.BlogPost.Select(b => b.Slug).ToListAsync();
+                //// check if slug is unique
+                //// check if List<string> slugs is null or empty?
+
+                //// loop over List<string> slugs and check for uniqueness
+                //foreach (string slug in slugs)
+                //{
+                //    if (slug == string.Empty || blogPost.Slug != slug)
+                //    {
+                //        blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
+                //    }
+                //    else
+                //    {
+                //        ModelState.AddModelError("Title", "The Title must be unique.");
+                //        ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                //        ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                //        return View(blogPost);
+                //    }
+                //}
 
                 // Associate any/all tags with the BlogPost
                 foreach (var tagId in tagIds)

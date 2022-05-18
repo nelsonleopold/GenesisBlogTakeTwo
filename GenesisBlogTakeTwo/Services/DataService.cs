@@ -29,11 +29,11 @@ namespace GenesisBlogTakeTwo.Services
             // Run a single commangd to execute all of the migrations
             await _context.Database.MigrateAsync();
 
-            // Call a private method that adds a few Roles into the system
-            // Adds 2 records into the AspNetRoles table 
+            // Call a private method that adds sample Roles, Users, and Tags
+            // into the system 
             await SeedRolesAsync();
             await SeedUsersAsync();
-
+            await SeedTagsAsync();
         }
 
         // A private method that seeds the Roles for Admin and Moderator on
@@ -87,6 +87,18 @@ namespace GenesisBlogTakeTwo.Services
             {
                 await _userManager.CreateAsync(modBlogUser, "Abc&123!");
                 await _userManager.AddToRoleAsync(modBlogUser, "Moderator");
+            }
+        }
+
+        private async Task SeedTagsAsync()
+        {
+            if (_context.Tag.Count() == 0)
+            {
+                await _context.AddAsync(new Tag() { Text = "Role Based Security" });
+                await _context.AddAsync(new Tag() { Text = "Scaffolding Against A Model" });
+                await _context.AddAsync(new Tag() { Text = "Customizing Identity" });
+                await _context.AddAsync(new Tag() { Text = "Working With Interfaces" });
+                await _context.SaveChangesAsync();
             }
         }
     }

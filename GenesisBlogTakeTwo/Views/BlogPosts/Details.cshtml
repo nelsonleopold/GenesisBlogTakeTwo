@@ -1,4 +1,8 @@
-﻿@model BlogPost
+﻿@using Microsoft.AspNetCore.Identity
+@using GenesisBlogTakeTwo.Enums
+
+@model BlogPost
+@inject UserManager<BlogUser> _userManager
 
 @{
     ViewData["Title"] = "Details";
@@ -30,7 +34,7 @@
     </div>
 </article>
 
-<div>
+<div id="ScrollTo">
     @if (User.Identity!.IsAuthenticated)
     {
         <form asp-controller="BlogPostComments" asp-action="Create">
@@ -62,22 +66,158 @@
         {
             <div class="col card border border-1 border-dark mb-3">
                 <div class="card-header">
-                    Author: @comment.Author!.FullName
+                    @if (comment.Moderated is null)
+                    {
+                        <span>Author: @comment.Author!.FullName</span>
+                    }
+                    else
+                    {
+                        <h6>Moderator: @comment.Author!.FullName</h6>
+                        <h6>Reason: @comment.ModReason</h6>
+                    }
                 </div>
-                <div class="card-body">
-                    @comment.Comment
+
+                <div id="Target-@(comment.Id)" class="card-body">
+                    @if (comment.Moderated is null)
+                    {
+                        @comment.Comment
+                    }
+                    else
+                    {
+                        @comment.ModeratedComment
+                    }
                 </div>
+
                 <div class="card-footer">
-                    Created: @comment.Created.ToString("MMM dd, yyy")
+                    @if (comment.Moderated is null)
+                    {
+                        <h6>Created on: @comment.Created.ToString("MMM dd, yyy")</h6>
+                    }
+                    else
+                    {
+                        <h6>Moderated on: @comment.Moderated?.ToString("MMM dd, yyy")</h6>
+                    }
+
+                    @*If this is MY comment AND it has not been moderated*@
+                    @if (comment.AuthorId == _userManager.GetUserId(User) && comment.Moderated is null)
+                    {
+                        <button class="btn btn-sm btn-dark float-end btnEdit" data-bs-toggle="modal" data-bs-target="#ModalEdit" data-target-id="@comment.Id">Edit</button>
+                    }
+
+                    @*If the user is a Moderator*@
+                    @if (User.IsInRole("Moderator"))
+                    {
+                        <button class="btn btn-sm btn-danger btn-outline-dark float-end ms-2 btnMod" data-bs-toggle="modal" data-bs-target="#ModalModerate" data-target-id="@comment.Id">Moderate</button>
+                    }
                 </div>
             </div>
         }
     </div>
+</div>
 
 
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
 
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-        <a asp-action="Index">Back to List</a>
+<!-- Modals -->
+<!-- Edit -->
+<div class="modal fade" id="ModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="frmEdit" asp-controller="BlogPostComments" asp-action="Edit">
+                    <input type="hidden" name="Id" id="ModalId" />
+                    <div class="form-group mb-3">
+                        <label class="control-label">Comment</label>
+                        <textarea name="Comment" id="ModalComment" class="form-control" rows="5"></textarea>
+                        <button type="submit" class="btn btn-dark w-100">Save changes</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Moderate -->
+@*1. The original comment but viewed as read only
+2. Record the reason for the Moderation
+3. Allow the moderator to enter the new comment
+4. The comment Id needs to be hidden in the form
+5. In HttpPost
+    a. Record the Moderator Id
+    b. Add the Moderation Date
+6. After the redirect back to the BlogPost Details Comment section, I want to see;
+    a. The Moderation reason
+    b. The Moderation date
+    c. The Moderator Name
+    d. The Moderated Comment*@
+<div class="modal fade" id="ModalModerate" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Moderate Modal</h5>
+                <button id="btnSubmit" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Moderate" asp-controller="BlogPostComments">
+                    <input type="hidden" name="Id" id="ModalModId" />
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Original Comment</label>
+                        <textarea id="ModalModCommentReadOnly" class="form-control" rows="5" name="Comment" readonly></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Moderation Reason</label>
+                        <select name="ModReason" class="form-control" asp-items="@Html.GetEnumSelectList<ModReason>()"></select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Moderated Comment</label>
+                        <textarea id="ModalModComment" class="form-control" rows="5" name="ModeratedComment"></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <button type="submit" class="btn btn-dark w-100">Save changes</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-dark" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("button.btnEdit").forEach((btn) => {
+            btn.addEventListener("click", function() {
+                let targetId = this.getAttribute("data-target-id");
+                document.getElementById("ModalId").value = targetId;
+                document.getElementById("ModalComment").innerText = document.getElementById(`Target-${targetId}`).innerText;
+            });
+        });
+    </script>
+    <script>
+        document.querySelectorAll("button.btnMod").forEach((btn) => {
+            btn.addEventListener("click", function() {
+                let targetId = this.getAttribute("data-target-id");
+                document.getElementById("ModalModId").value = targetId;
+
+                let originalComment = document.getElementById(`Target-${targetId}`).innerText;
+                document.getElementById("ModalModCommentReadOnly").innerText = originalComment;
+                document.getElementById("ModalModComment").innerText = originalComment;
+            });
+        });
+    </script>
+}
