@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using GenesisBlogTakeTwo.Data;
 using GenesisBlogTakeTwo.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class TagsController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -42,6 +42,15 @@ namespace GenesisBlogTakeTwo.Controllers
             return View(blogPost);
         }
 
+        // GET: BlogPosts that are associated with a specific tag
+        [AllowAnonymous]
+        public async Task<IActionResult> PostsByTag(int id)
+        {
+            var tag = await _context.Tag.Include(t => t.BlogPosts)
+                                        .FirstOrDefaultAsync(t => t.Id == id);
+            return View("SearchPosts", tag.BlogPosts.ToList());
+        }
+
         // GET: BlogPosts in development state
         public async Task<IActionResult> InDevIndex()
         {

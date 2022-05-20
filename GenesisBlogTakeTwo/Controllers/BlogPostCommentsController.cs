@@ -9,9 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using GenesisBlogTakeTwo.Data;
 using GenesisBlogTakeTwo.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
+    [Authorize(Roles = "Admin,Moderator")]
     public class BlogPostCommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -53,6 +55,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // POST: BlogPostComments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BlogPostId,Comment")] BlogPostComment blogPostComment, string slug)
@@ -69,23 +72,6 @@ namespace GenesisBlogTakeTwo.Controllers
             ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
             return View(blogPostComment);
         }
-
-        // GET: BlogPostComments/Edit/5
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var blogPostComment = await _context.BlogPostComment.FindAsync(id);
-        //    if (blogPostComment == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
-        //    return View(blogPostComment);
-        //}
 
         // POST: BlogPostComments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
