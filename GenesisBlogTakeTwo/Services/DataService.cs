@@ -34,6 +34,8 @@ namespace GenesisBlogTakeTwo.Services
             await SeedRolesAsync();
             await SeedUsersAsync();
             await SeedTagsAsync();
+            await SeedTestBlogs();
+
         }
 
         // A private method that seeds the Roles for Admin and Moderator on
@@ -100,6 +102,24 @@ namespace GenesisBlogTakeTwo.Services
                 await _context.AddAsync(new Tag() { Text = "Working With Interfaces" });
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async Task SeedTestBlogs()
+        {
+            if (_context.BlogPost.Any())
+                return;
+            for(var loop = 1; loop <= 10; loop++)
+            {
+                _context.Add(new BlogPost()
+                {
+                    Title = $"Blog Title {loop}: The importance of {loop}'s in coding...",
+                    Abstract = $"Have you ever wondered why the number {loop} plays such a significant role in coding?",
+                    Content = "Test Content...",
+                    Created = DateTime.UtcNow.AddDays(-loop),
+                    Slug = $"blog-title-{loop}-the-importance-of-{loop}s-in-coding"
+                });
+            }
+            await _context.SaveChangesAsync();
         }
     }
 }

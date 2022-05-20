@@ -17,7 +17,7 @@ namespace GenesisBlogTakeTwo.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BlogUser> _userManager;
 
-        public BlogPostCommentsController(ApplicationDbContext context, 
+        public BlogPostCommentsController(ApplicationDbContext context,
                                           UserManager<BlogUser> userManager)
         {
             _context = context;
@@ -55,7 +55,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogPostId,Comment")] BlogPostComment blogPostComment)
+        public async Task<IActionResult> Create([Bind("BlogPostId,Comment")] BlogPostComment blogPostComment, string slug)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +64,7 @@ namespace GenesisBlogTakeTwo.Controllers
 
                 _context.Add(blogPostComment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "BlogPosts", new {Id = blogPostComment.BlogPostId}, "ScrollTo");
+                return RedirectToAction("Details", "BlogPosts", new { slug }, "ScrollTo");
             }
             ViewData["BlogPostId"] = new SelectList(_context.BlogPost, "Id", "Abstract", blogPostComment.BlogPostId);
             return View(blogPostComment);
@@ -92,7 +92,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogPostId,Comment")] BlogPostComment blogPostComment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogPostId,Comment")] BlogPostComment blogPostComment, string slug)
         {
             if (id != blogPostComment.Id)
             {
@@ -108,7 +108,7 @@ namespace GenesisBlogTakeTwo.Controllers
                     existingComment.Updated = DateTime.UtcNow;
                     // _context.Update(blogPostComment);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("Details", "BlogPosts", new { id = existingComment.BlogPostId });
+                    return RedirectToAction("Details", "BlogPosts", new { slug });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -131,7 +131,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Moderate(int id, [Bind("Id,Comment,ModReason,ModeratedComment")] BlogPostComment blogPostComment)
+        public async Task<IActionResult> Moderate(int id, [Bind("Id,Comment,ModReason,ModeratedComment")] BlogPostComment blogPostComment, string slug)
         {
             if (id != blogPostComment.Id)
             {
@@ -147,9 +147,9 @@ namespace GenesisBlogTakeTwo.Controllers
                     existingComment.ModReason = blogPostComment.ModReason;
                     existingComment.Moderated = DateTime.UtcNow;
                     existingComment.ModeratorId = _userManager.GetUserId(User);
-                    
+
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("Details", "BlogPosts", new { id = existingComment.BlogPostId }, "ScrollTo");
+                    return RedirectToAction("Details", "BlogPosts", new { slug }, "ScrollTo");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -194,6 +194,17 @@ namespace GenesisBlogTakeTwo.Controllers
             _context.BlogPostComment.Remove(blogPostComment);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SoftDelete(int id, string slug)
+        {
+            var comment = await _context.BlogPostComment.FindAsync(id);
+            comment.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", "BlogPosts", new { slug }, "ScrollTo");
         }
 
         private bool BlogPostCommentExists(int id)

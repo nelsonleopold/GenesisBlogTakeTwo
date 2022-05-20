@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text;
+using X.PagedList;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
@@ -26,10 +27,22 @@ namespace GenesisBlogTakeTwo.Controllers
             _emailService = emailService;
         }
 
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    var blogPosts = _context.BlogPost.ToList();
+        //    return View(blogPosts);
+        //}
+
+        public async Task<IActionResult> Index(int? pageNum)
         {
-            var blogPosts = _context.BlogPost.ToList();
-            return View(blogPosts);
+            pageNum ??= 1;
+            var pageSize = 3;
+
+            var posts = await _context.BlogPost.Where(b => b.BlogPostState == Enums.BlogPostState.ProductionReady && !b.IsDeleted)
+                                               .OrderByDescending(b => b.Created)
+                                               .ToPagedListAsync(pageNum, pageSize);
+
+            return View(posts);
         }
 
         public IActionResult ContactMe()

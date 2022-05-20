@@ -30,6 +30,8 @@ builder.Services.AddTransient<DataService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<SlugService>();
 builder.Services.AddScoped<IEmailSender, BasicEmailService>();
+builder.Services.AddScoped<DisplayService>();
+builder.Services.AddScoped<SearchService>();
 
 
 builder.Services.AddControllersWithViews();

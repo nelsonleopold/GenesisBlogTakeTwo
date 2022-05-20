@@ -12,6 +12,7 @@ using GenesisBlogTakeTwo.Enums;
 using GenesisBlogTakeTwo.Services.Interfaces;
 using GenesisBlogTakeTwo.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using GenesisBlogTakeTwo.Services;
 
 namespace GenesisBlogTakeTwo.Controllers
 {
@@ -21,14 +22,17 @@ namespace GenesisBlogTakeTwo.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly SlugService _slugService;
+        private readonly SearchService _searchService;
 
         public BlogPostsController(ApplicationDbContext context,
                                    IImageService imageService,
-                                   SlugService slugService)
+                                   SlugService slugService,
+                                   SearchService searchService)
         {
             _context = context;
             _imageService = imageService;
             _slugService = slugService;
+            _searchService = searchService;
         }
 
         // GET: BlogPosts
@@ -56,11 +60,22 @@ namespace GenesisBlogTakeTwo.Controllers
             return View("Index", blogPost);
         }
 
+        // POST: Search function this should work for anonymous users
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SearchPosts(string searchString)
+        {
+
+            var searchData = _searchService.Search(searchString);
+            return View(searchData);
+        }
+
         // GET: BlogPosts/Details/5
         [AllowAnonymous]
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string slug)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(slug))
             {
                 return NotFound();
             }
@@ -68,7 +83,7 @@ namespace GenesisBlogTakeTwo.Controllers
             var blogPost = await _context.BlogPost.Include(b => b.Tags)
                                                   .Include(b => b.BlogPostComments)
                                                     .ThenInclude(c => c.Author)
-                                                  .FirstOrDefaultAsync(m => m.Id == id);
+                                                  .FirstOrDefaultAsync(m => m.Slug == slug);
             if (blogPost == null)
             {
                 return NotFound();
@@ -94,10 +109,23 @@ namespace GenesisBlogTakeTwo.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, List<int> tagIds)
+        public async Task<IActionResult> Create([Bind("Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, List<int> tagIds)
         {
             if (ModelState.IsValid)
             {
+                var slug = _slugService.URLFriendly(blogPost.Title);
+                if (_context.BlogPost.Any(b => b.Slug == slug))
+                {
+                    ModelState.AddModelError("Title", "The Title must be unique.");
+                    ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+                    ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
+                    return View(blogPost);
+                }
+                else
+                {
+                    blogPost.Slug = slug;
+                }
+
                 // verify that IFormFile isn't null before interacting with it
                 if (blogPost.ImageFile is not null)
                 {
@@ -105,7 +133,17 @@ namespace GenesisBlogTakeTwo.Controllers
                     blogPost.ImageType = blogPost.ImageFile.ContentType;
                 }
 
-                // when using quill rich text editor, content will never be an empty string because
+                // Associate any/all tags with the BlogPost
+                foreach (var tagId in tagIds)
+                {
+                    // do something...
+                    blogPost.Tags.Add(await _context.Tag.FindAsync(tagId));
+                }
+
+                // Created date/time is generated programmatically
+                blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
+
+                // when using quill rich text editor (or tinyMCE editor), content will never be an empty string because
                 // quill auto inserts <p><br></p>; it will replace the <br> tag with whatever is 
                 // entered by the user; so this is a check for no data being entered by user. Should
                 // refactor this into a _configuration setting?
@@ -120,58 +158,8 @@ namespace GenesisBlogTakeTwo.Controllers
                     return View();
                 }
 
-                // these are generated programmatically
-                blogPost.Created = DateTime.SpecifyKind(blogPost.Created, DateTimeKind.Utc);
-
-                // blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
-                // get a list of all slugs
-                var slug = _slugService.URLFriendly(blogPost.Title);
-                if(_context.BlogPost.Any(b => b.Slug == slug))
-                {
-                    ModelState.AddModelError("Title", "The Title must be unique.");
-                    ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
-                    ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
-                    return View(blogPost);
-                }
-                else
-                {
-                    blogPost.Slug = slug;
-                }
-
-
-
-
-
-                //List<string> slugs = await _context.BlogPost.Select(b => b.Slug).ToListAsync();
-                //// check if slug is unique
-                //// check if List<string> slugs is null or empty?
-
-                //// loop over List<string> slugs and check for uniqueness
-                //foreach (string slug in slugs)
-                //{
-                //    if (slug == string.Empty || blogPost.Slug != slug)
-                //    {
-                //        blogPost.Slug = _slugService.URLFriendly(blogPost.Title);
-                //    }
-                //    else
-                //    {
-                //        ModelState.AddModelError("Title", "The Title must be unique.");
-                //        ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
-                //        ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
-                //        return View(blogPost);
-                //    }
-                //}
-
-                // Associate any/all tags with the BlogPost
-                foreach (var tagId in tagIds)
-                {
-                    // do something...
-                    blogPost.Tags.Add(await _context.Tag.FindAsync(tagId));
-                }
-
                 _context.Add(blogPost);
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction(nameof(Index));
             }
             // data should persist even if ModelState is invalid
@@ -179,15 +167,15 @@ namespace GenesisBlogTakeTwo.Controllers
         }
 
         // GET: BlogPosts/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(string slug)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(slug))
             {
                 return NotFound();
             }
 
             var blogPost = await _context.BlogPost.Include(b => b.Tags)
-                                                  .FirstOrDefaultAsync(b => b.Id == id);
+                                                  .FirstOrDefaultAsync(b => b.Slug == slug);
 
             if (blogPost == null)
             {

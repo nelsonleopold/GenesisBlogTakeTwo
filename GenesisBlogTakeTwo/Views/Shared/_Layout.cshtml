@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using GenesisBlogTakeTwo.Services.Interfaces
+@inject IImageService _imageService
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -45,7 +49,6 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ms-auto py-4 py-lg-0">
                     <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About</a></li>
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" asp-controller="BlogPosts" asp-action="Create">Create A New Blog Post</a></li>
@@ -72,8 +75,16 @@
         </div>
     </nav>
 
+    @{
+        var bgImage = "/assets/img/home-bg.jpg";
+        if(ViewBag.ImageType is not null)
+        {
+            bgImage = _imageService.ConvertByteArrayToFile(ViewBag.ImageData, ViewBag.ImageType);
+        }
+    }
+
     <!-- Page Header-->
-    <header class="masthead" style="background-image: url('@ViewBag.BGImage')">
+    <header class="masthead" style="background-image: url('@bgImage')">
         <div class="container position-relative px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-md-10 col-lg-8 col-xl-7">
@@ -86,6 +97,17 @@
                         }
                     </div>
                 </div>
+
+                @*Setting up search function*@
+                <div class="my-5">
+                    <form class="form-inline" asp-controller="BlogPosts" asp-action="SearchPosts" method="post">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="SearchString" placeholder="Enter search string" required />
+                            <button type="submit" class="btn btn-outline-warning">Search</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
     </header>

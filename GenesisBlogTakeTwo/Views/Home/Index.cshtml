@@ -1,33 +1,86 @@
-﻿@model IEnumerable<BlogPost>
+﻿@using GenesisBlogTakeTwo.Services.Interfaces
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+
+@inject IImageService imageService;
+
+@model IPagedList<BlogPost>
 
 @{
-    ViewData["Title"] = "Genesis Blog";
+    ViewData["Title"] = "Public Blogs";
 }
 
-<!-- Main Content-->
-<div class="container px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-        <div class="col-md-10 col-lg-8 col-xl-7">
+@{
+    var loop = 1;
+    var even = false;
+    bool odd;
+}
 
-            @foreach(var blogPost in Model)
-            {
-                <!-- Post preview -->
-                <div class="post-preview">
-                    <a asp-controller="BlogPosts" asp-action="Details" asp-route-id="@blogPost.Id">
-                        <h2 class="post-title">@blogPost.Title</h2>
-                        <h3 class="post-subtitle">@blogPost.Abstract</h3>
-                    </a>
-                    <p class="post-meta">
-                        Posted by <a href="">Nelson TheDev</a>
-                        on @blogPost.Created.ToString("MMMM dd, yyy")
-                    </p>
-                </div>
-                <!-- Divider -->
-                <hr class="my-4" />
-            }
+@foreach (var blogPost in Model)
+{
+    even = (loop % 2 == 0);
+    odd = !even;
 
-            <!-- Pager -->
-            <div class="d-flex justify-content-end mb-4"><a class="btn btn-primary text-uppercase" href="#">Older Posts</a></div>
+    <div class="row mb-5">
+
+        @if (odd)
+        {
+            <div class="col-4">
+                @if (string.IsNullOrEmpty(blogPost.ImageType))
+                {
+                    <img class="img-fluid" src="~/assets/img/post-bg.jpg">
+                }
+                else
+                {
+                    <img class="img-fluid" src="@imageService.ConvertByteArrayToFile(blogPost.ImageData, blogPost.ImageType)">
+                }
+            </div>
+        }
+        <div class="col-8">
+            <!-- Post preview -->
+            <div class="post-preview">
+                <a asp-controller="BlogPosts" asp-action="Details" asp-route-slug="@blogPost.Slug">
+                    <h2 class="post-title">@blogPost.Title</h2>
+                    <h3 class="post-subtitle">@blogPost.Abstract</h3>
+                </a>
+                <p class="post-meta">
+                    Posted by <a href="">Nelson TheDev</a>
+                    on @blogPost.Created.ToString("MMMM dd, yyy")
+                </p>
+            </div>
+            <!-- Divider -->
+            <hr class="my-4" />
         </div>
+
+        @if (even)
+        {
+            <div class="col-4">
+                @if (string.IsNullOrEmpty(blogPost.ImageType))
+                {
+                    <img class="img-fluid" src="~/assets/img/post-bg.jpg">
+                }
+                else
+                {
+                    <img class="img-fluid" src="@imageService.ConvertByteArrayToFile(blogPost.ImageData, blogPost.ImageType)">
+                }
+            </div>
+        }
+    </div>
+    loop++;
+}
+
+@*Add in an interactive paging mechanism*@
+<div class="row row-cols-1 g-5">
+    <div class="col text-center">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    </div>
+    <div class="col justify-content-center">
+        @Html.PagedListPager(Model, pageNum => Url.Action("Index", new { pageNum}),
+        new PagedListRenderOptions
+        {
+        LiElementClasses = new string[] { "page-item"},
+        PageClasses = new string[] { "page-link" }
+        })
     </div>
 </div>

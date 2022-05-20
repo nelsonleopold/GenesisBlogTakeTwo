@@ -1,8 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using GenesisBlogTakeTwo.Enums
+@using GenesisBlogTakeTwo.Services
 
 @model BlogPost
 @inject UserManager<BlogUser> _userManager
+@inject DisplayService _displayService
 
 @{
     ViewData["Title"] = "Details";
@@ -40,6 +42,7 @@
         <form asp-controller="BlogPostComments" asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" name="BlogPostId" value="@Model.Id" />
+            <input type="hidden" name="Slug" value="@Model.Slug" />
 
             <div class="form-group">
                 <label class="control-label">Add Comment</label>
@@ -72,7 +75,7 @@
                     }
                     else
                     {
-                        <h6>Moderator: @comment.Author!.FullName</h6>
+                        <h6>Moderator: @await _displayService.DisplayModeratorName(comment.ModeratorId!)</h6>
                         <h6>Reason: @comment.ModReason</h6>
                     }
                 </div>
@@ -104,10 +107,19 @@
                         <button class="btn btn-sm btn-dark float-end btnEdit" data-bs-toggle="modal" data-bs-target="#ModalEdit" data-target-id="@comment.Id">Edit</button>
                     }
 
-                    @*If the user is a Moderator*@
+                    @*If the user is an Admin or a Moderator*@
                     @if (User.IsInRole("Moderator"))
                     {
                         <button class="btn btn-sm btn-danger btn-outline-dark float-end ms-2 btnMod" data-bs-toggle="modal" data-bs-target="#ModalModerate" data-target-id="@comment.Id">Moderate</button>
+                    }
+                    else if (User.IsInRole("Admin"))
+                    {
+                        <button class="btn btn-sm btn-danger btn-outline-dark float-end ms-2 btnMod" data-bs-toggle="modal" data-bs-target="#ModalModerate" data-target-id="@comment.Id">Moderate</button>
+                        <form asp-action="SoftDelete" asp-controller="BlogPostComments">
+                            <input type="hidden" name="Slug" value="@Model.Slug" />
+                            <input type="hidden" name="Id" value="@comment.Id" />
+                            <button type="submit" class="btn btn-sm btn-dark btn-outline-danger">Delete</button>
+                        </form>
                     }
                 </div>
             </div>
@@ -117,7 +129,7 @@
 
 
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Edit" asp-route-slug="@Model?.Slug">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
 
@@ -133,6 +145,7 @@
             <div class="modal-body">
                 <form id="frmEdit" asp-controller="BlogPostComments" asp-action="Edit">
                     <input type="hidden" name="Id" id="ModalId" />
+                    <input type="hidden" name="Slug" value="@Model.Slug" />
                     <div class="form-group mb-3">
                         <label class="control-label">Comment</label>
                         <textarea name="Comment" id="ModalComment" class="form-control" rows="5"></textarea>
@@ -170,6 +183,7 @@
             <div class="modal-body">
                 <form asp-action="Moderate" asp-controller="BlogPostComments">
                     <input type="hidden" name="Id" id="ModalModId" />
+                    <input type="hidden" name="Slug" value="@Model.Slug" />
 
                     <div class="form-group mb-3">
                         <label class="control-label">Original Comment</label>
@@ -178,7 +192,7 @@
 
                     <div class="form-group mb-3">
                         <label class="control-label">Moderation Reason</label>
-                        <select name="ModReason" class="form-control" asp-items="@Html.GetEnumSelectList<ModReason>()"></select>
+                        <select id="ModReason" name="ModReason" class="form-control" asp-items="@Html.GetEnumSelectList<ModReason>()"></select>
                     </div>
 
                     <div class="form-group mb-3">
@@ -217,6 +231,10 @@
                 let originalComment = document.getElementById(`Target-${targetId}`).innerText;
                 document.getElementById("ModalModCommentReadOnly").innerText = originalComment;
                 document.getElementById("ModalModComment").innerText = originalComment;
+
+                // User data-mod-reason as a mechanism for dispalying a reason that has already been set
+                let modReason = this.getAttribute("data-mod-reason");
+                document.getElementById("ModReason").value = modReason;
             });
         });
     </script>
