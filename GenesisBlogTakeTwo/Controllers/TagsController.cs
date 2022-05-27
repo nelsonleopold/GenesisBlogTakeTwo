@@ -140,8 +140,13 @@ namespace GenesisBlogTakeTwo.Controllers
         // POST: Tags/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
             var tag = await _context.Tag.FindAsync(id);
             _context.Tag.Remove(tag);
             await _context.SaveChangesAsync();

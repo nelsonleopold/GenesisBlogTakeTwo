@@ -120,7 +120,7 @@ namespace GenesisBlogTakeTwo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Title,Abstract,Content,IsDeleted,BlogPostState,ImageFile")] BlogPost blogPost, List<int> tagIds)
         {
-            if (ModelState.IsValid)
+            if (blogPost.Content != "<p><br></p>" && ModelState.IsValid)
             {
                 var slug = _slugService.URLFriendly(blogPost.Title);
                 if (_context.BlogPost.Any(b => b.Slug == slug))
@@ -172,6 +172,9 @@ namespace GenesisBlogTakeTwo.Controllers
                 return RedirectToAction(nameof(Index));
             }
             // data should persist even if ModelState is invalid
+            ModelState.AddModelError("Content", "The Content field is required.");
+            ViewData["TagIds"] = new MultiSelectList(_context.Tag, "Id", "Text", tagIds);
+            ViewData["BlogPostStatesList"] = new SelectList(Enum.GetValues(typeof(BlogPostState)).Cast<BlogPostState>().ToList());
             return View(blogPost);
         }
 

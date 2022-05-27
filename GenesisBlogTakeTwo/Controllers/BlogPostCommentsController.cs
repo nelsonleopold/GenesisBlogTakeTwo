@@ -76,6 +76,7 @@ namespace GenesisBlogTakeTwo.Controllers
         // POST: BlogPostComments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,BlogPostId,Comment")] BlogPostComment blogPostComment, string slug)
@@ -94,7 +95,7 @@ namespace GenesisBlogTakeTwo.Controllers
                     existingComment.Updated = DateTime.UtcNow;
                     // _context.Update(blogPostComment);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("Details", "BlogPosts", new { slug });
+                    return RedirectToAction("Details", "BlogPosts", new { slug }, "ScrollTo");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
