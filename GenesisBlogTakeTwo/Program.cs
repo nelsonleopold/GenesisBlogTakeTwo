@@ -6,6 +6,7 @@ using GenesisBlogTakeTwo.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.R
     .AddDefaultUI()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddControllersWithViews();
+
+
 // Custom Services
 builder.Services.AddTransient<DataService>();
 builder.Services.AddScoped<IImageService, ImageService>();
@@ -33,8 +37,23 @@ builder.Services.AddScoped<IEmailSender, BasicEmailService>();
 builder.Services.AddScoped<DisplayService>();
 builder.Services.AddScoped<SearchService>();
 
-
-builder.Services.AddControllersWithViews();
+// Register an instance of SwaggerGen
+builder.Services.AddSwaggerGen(c =>
+{
+    c.IncludeXmlComments($"{Directory.GetCurrentDirectory()}/wwwroot/GenesisBlogTakeTwo.xml", true);
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Genesis Blog API",
+        Version = "v1",
+        Description = "Serving up Blog data using .Net 6",
+        Contact = new OpenApiContact
+        {
+            Name = "nelson thedev",
+            Email = "nelson.thedev@gmail.com",
+            Url = new Uri("https://www.linkedin.com/in/nelson-the-dev")
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -55,6 +74,15 @@ else
     app.UseHsts();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Public API");
+    c.InjectStylesheet("/css/swagger.css");
+    c.InjectJavascript("/js/swagger.js");
+    c.DocumentTitle = "Genesis Blog Public API";
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -62,6 +90,13 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Configure a second, custom route just for BlogPost/Details
+app.MapControllerRoute(
+    name: "details",
+    pattern: "PostDetails/{slug}",
+    defaults: new { controller = "BlogPosts", action = "Details" }
+    );
 
 app.MapControllerRoute(
     name: "default",
