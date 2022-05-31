@@ -33,6 +33,24 @@ namespace GenesisBlogTakeTwo.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+        public async Task<IActionResult> ModeratedIndex()
+        {
+            var comments = await _context.BlogPostComment.Include(b => b.BlogPost)
+                                                         .Where(c => c.Moderated != null && !c.IsDeleted)
+                                                         .ToListAsync();
+
+            return View("Index", comments);
+        }
+
+        public async Task<IActionResult> DeletedIndex()
+        {
+            var comments = await _context.BlogPostComment.Include(b => b.BlogPost)
+                                                         .Where(c => c.IsDeleted)
+                                                         .ToListAsync();
+
+            return View("Index", comments);
+        }
+
         // GET: BlogPostComments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
