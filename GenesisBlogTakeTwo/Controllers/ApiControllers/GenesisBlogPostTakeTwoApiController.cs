@@ -6,6 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GenesisBlogTakeTwo.Controllers.ApiControllers
 {
+    /// <summary>
+    /// This controller intercepts requests for BlogPost data over Http
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class GenesisBlogPostTakeTwoApiController : ControllerBase
@@ -17,7 +20,8 @@ namespace GenesisBlogTakeTwo.Controllers.ApiControllers
             _context = context;
         }
 
-        [HttpGet("/GetTopXPosts/{num}")]
+        [HttpGet]
+        [ActionName("GetTopXPosts/{num}")]
         public async Task<ActionResult<IEnumerable<BlogPost>>> GetTopXPosts(int num)
         {
             if (_context.BlogPost == null)
@@ -32,84 +36,84 @@ namespace GenesisBlogTakeTwo.Controllers.ApiControllers
             return await blogPosts.ToListAsync();
         }
 
-        public async Task<ActionResult<BlogPost>> GetBlogPost(int id)
-        {
-            if (_context.BlogPost == null)
-            {
-                return NotFound();
-            }
+        //public async Task<ActionResult<BlogPost>> GetBlogPost(int id)
+        //{
+        //    if (_context.BlogPost == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var blogPost = await _context.BlogPost.FindAsync(id);
+        //    var blogPost = await _context.BlogPost.FindAsync(id);
 
-            if (blogPost == null)
-            {
-                return NotFound();
-            }
+        //    if (blogPost == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return blogPost;
-        }
+        //    return blogPost;
+        //}
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBlogPost(int id, BlogPost blogPost)
-        {
-            if (id != blogPost.Id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutBlogPost(int id, BlogPost blogPost)
+        //{
+        //    if (id != blogPost.Id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(blogPost).State = EntityState.Modified;
+        //    _context.Entry(blogPost).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BlogPostExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return NoContent();
-        }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!BlogPostExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //    return NoContent();
+        //}
 
-        [HttpPost]
-        public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
-        {
-            if (_context.BlogPost == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.BlogPost' is null.");
-            }
+        //[HttpPost]
+        //public async Task<ActionResult<BlogPost>> PostBlogPost(BlogPost blogPost)
+        //{
+        //    if (_context.BlogPost == null)
+        //    {
+        //        return Problem("Entity set 'ApplicationDbContext.BlogPost' is null.");
+        //    }
 
-            _context.BlogPost.Add(blogPost);
-            await _context.SaveChangesAsync();
+        //    _context.BlogPost.Add(blogPost);
+        //    await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBlogPost", new { id = blogPost.Id }, blogPost);
-        }
+        //    return CreatedAtAction("GetBlogPost", new { id = blogPost.Id }, blogPost);
+        //}
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteBlogPost(int id)
-        {
-            if (_context.BlogPost == null)
-            {
-                return NotFound();
-            }
+        //[HttpDelete]
+        //public async Task<IActionResult> DeleteBlogPost(int id)
+        //{
+        //    if (_context.BlogPost == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var blogPost = await _context.BlogPost.FindAsync(id);
-            if (blogPost == null)
-            {
-                return NotFound();
-            }
+        //    var blogPost = await _context.BlogPost.FindAsync(id);
+        //    if (blogPost == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            _context.BlogPost.Remove(blogPost);
-            await _context.SaveChangesAsync();
+        //    _context.BlogPost.Remove(blogPost);
+        //    await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         private bool BlogPostExists(int id)
         {

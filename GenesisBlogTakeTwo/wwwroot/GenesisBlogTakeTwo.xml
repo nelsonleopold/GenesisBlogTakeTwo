@@ -1,0 +1,75 @@
+﻿<?xml version="1.0"?>
+<doc>
+	<assembly>
+		<name>GenesisBlogTakeTwo</name>
+	</assembly>
+	<members>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.Input">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.ReturnUrl">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.ExternalLogins">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="T:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.InputModel">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.InputModel.Email">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.InputModel.Password">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Areas.Identity.Pages.Account.RegisterModel.InputModel.ConfirmPassword">
+			<summary>
+				This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+				directly from your code. This API may change or be removed in future releases.
+			</summary>
+		</member>
+		<member name="T:GenesisBlogTakeTwo.Controllers.ApiControllers.BlogPostsApiController">
+			<summary>
+				This controller intercepts requests for BlogPost data over Http
+			</summary>
+		</member>
+		<member name="T:GenesisBlogTakeTwo.Models.BlogPost">
+			<summary>
+				This Class processes the requests for BlogPosts
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Models.BlogPost.Id">
+			<summary>
+				This is the PK of a BlogPost record
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Models.BlogPost.Title">
+			<summary>
+				This serves as the BlogPost Title
+			</summary>
+		</member>
+		<member name="P:GenesisBlogTakeTwo.Models.BlogPost.Abstract">
+			<summary>
+				This is a synopsis of the BlogPost to entice the reader
+			</summary>
+		</member>
+	</members>
+</doc>

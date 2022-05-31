@@ -5,15 +5,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GenesisBlogTakeTwo.Models
 {
+    /// <summary>
+    /// This Class processes the requests for BlogPosts
+    /// </summary>
     public class BlogPost
     {
+        /// <summary>
+        /// This is the private key of a BlogPost record
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// This serves as the BlogPost Title
+        /// </summary>
         [Required]
         [StringLength(250, ErrorMessage = "The {0} must be at least {2} characters and no more than {1} characters long.", MinimumLength = 2)]
         public string Title { get; set; } = string.Empty;
 
-
+        /// <summary>
+        /// This is a synopsis of the BlogPost to entice the reader
+        /// </summary>
         [Required]
         public string Abstract { get; set; } = string.Empty;
 
