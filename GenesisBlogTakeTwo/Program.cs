@@ -66,6 +66,8 @@ builder.Services.AddCors(obj =>
 
 var app = builder.Build();
 
+app.UseCors("DefaultPolicy");
+
 // Use custom service
 var scope = app.Services.CreateScope();
 var dataService = scope.ServiceProvider.GetRequiredService<DataService>();
