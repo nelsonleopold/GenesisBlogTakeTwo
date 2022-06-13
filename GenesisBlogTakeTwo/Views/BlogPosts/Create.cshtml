@@ -52,7 +52,7 @@
 
             <div class="col-md-4 form-group mb-3">
                 <label asp-for="ImageFile" class="control-label"></label>
-                <input asp-for="ImageFile" class="form-control" accept=".png,.jpg,.jpeg,.gif"
+                <input asp-for="ImageFile" class="form-control" accept=".png,.jpg,.jpeg,.gif,.webp"
                        onchange="document.getElementById('defaultImage').src = window.URL.createObjectURL(this.files[0])" />
                 <span asp-validation-for="ImageFile" class="text-danger"></span>
             </div>
