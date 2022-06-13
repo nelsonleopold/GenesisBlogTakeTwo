@@ -1,4 +1,6 @@
-﻿@model GenesisBlogTakeTwo.Models.BlogPostComment
+﻿@using GenesisBlogTakeTwo.Enums
+
+@model GenesisBlogTakeTwo.Models.BlogPostComment
 
 @{
     ViewData["Title"] = "Details";
@@ -10,21 +12,119 @@
     <h4>BlogPostComment</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Comment)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Comment)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BlogPost)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BlogPost.Abstract)
-        </dd>
+        @if (Model.Moderated is null)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.BlogPost)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.BlogPost!.Abstract)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Comment)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Comment)
+            </dd>
+        }
+        else
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.BlogPost)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.BlogPost!.Abstract)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Comment)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Comment)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.ModeratedComment)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.ModeratedComment)
+            </dd>
+        }
+
+
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (User.IsInRole("Moderator"))
+    {
+        <button class="btn btn-sm btn-danger btn-outline-dark float-end ms-2 btnMod" data-bs-toggle="modal" data-bs-target="#ModalModerate" data-target-id="@Model.Id">Moderate</button>
+    }
+
+    else if (User.IsInRole("Admin"))
+    {
+        <button class="btn btn-sm btn-danger btn-outline-dark float-end ms-2 btnMod" data-bs-toggle="modal" data-bs-target="#ModalModerate" data-target-id="@Model.Id">Moderate</button>
+        <form asp-action="SoftDelete" asp-controller="BlogPostComments">
+            <input type="hidden" name="Slug" value="@Model.BlogPost!.Slug" />
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <button type="submit" class="btn btn-sm btn-dark btn-outline-danger">Delete</button>
+        </form>
+    }
     <a asp-action="Index">Back to List</a>
 </div>
+
+<div class="modal fade" id="ModalModerate" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Moderate Modal</h5>
+                <button id="btnSubmit" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Moderate" asp-controller="BlogPostComments">
+                    <input type="hidden" name="Id" id="ModalModId" />
+                    <input type="hidden" name="Slug" value="@Model?.BlogPost!.Slug" />
+                    <input type="hidden" name="Comment" value="@Model.Comment" />
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Original Comment</label>
+                        <textarea id="ModalModCommentReadOnly" class="form-control" rows="5" name="Comment" readonly></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Moderation Reason</label>
+                        <select id="ModReason" name="ModReason" class="form-control" asp-items="@Html.GetEnumSelectList<ModReason>()"></select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="control-label">Moderated Comment</label>
+                        <textarea id="ModalModComment" class="form-control" rows="5" name="ModeratedComment"></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <button type="submit" class="btn btn-dark w-100">Save changes</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-dark" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("button.btnMod").forEach((btn) => {
+            btn.addEventListener("click", function() {
+                let targetId = this.getAttribute("data-target-id");
+                document.getElementById("ModalModId").value = targetId;
+
+                let originalComment = document.getElementById(`Target-${targetId}`).innerText;
+                document.getElementById("ModalModCommentReadOnly").innerText = originalComment;
+                document.getElementById("ModalModComment").innerText = originalComment;
+
+                // User data-mod-reason as a mechanism for dispalying a reason that has already been set
+                let modReason = this.getAttribute("data-mod-reason");
+                document.getElementById("ModReason").value = modReason;
+            });
+        });
+    </script>
+}

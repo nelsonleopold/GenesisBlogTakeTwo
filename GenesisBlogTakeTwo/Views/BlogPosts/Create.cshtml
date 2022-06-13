@@ -34,7 +34,7 @@
             <div class="col-md-8 form-group mb-3">
                 <label asp-for="Content" class="control-label"></label>
                 @*this will change to type="hidden" in the final code*@
-                <input type="text" asp-for="Content" />
+                <input type="hidden" asp-for="Content" />
                 <span asp-validation-for="Content" class="text-danger"></span>
                 <div id="quillEditor">
                         @if (Model != null)

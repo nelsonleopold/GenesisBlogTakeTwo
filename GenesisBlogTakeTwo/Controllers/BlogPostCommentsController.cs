@@ -48,7 +48,7 @@ namespace GenesisBlogTakeTwo.Controllers
                                                          .Where(c => c.IsDeleted)
                                                          .ToListAsync();
 
-            return View("Index", comments);
+            return View("DeletedIndex", comments);
         }
 
         // GET: BlogPostComments/Details/5

@@ -129,7 +129,10 @@
 
 
 <div>
-    <a asp-action="Edit" asp-route-slug="@Model?.Slug">Edit</a> |
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Edit" asp-route-slug="@Model?.Slug">Edit</a> 
+    } |
     <a asp-action="Index">Back to List</a>
 </div>
 
@@ -145,7 +148,7 @@
             <div class="modal-body">
                 <form id="frmEdit" asp-controller="BlogPostComments" asp-action="Edit">
                     <input type="hidden" name="Id" id="ModalId" />
-                    <input type="hidden" name="Slug" value="@Model.Slug" />
+                    <input type="hidden" name="Slug" value="@Model!.Slug" />
                     <div class="form-group mb-3">
                         <label class="control-label">Comment</label>
                         <textarea name="Comment" id="ModalComment" class="form-control" rows="5"></textarea>

@@ -6,9 +6,6 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -22,20 +19,34 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Comment)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BlogPost.Abstract)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                @*<td>
+                    @Html.DisplayFor(modelItem => item.Comment)
+                </td>*@
+                <td>
+                     @if (item.Moderated is null)
+                    {
+                        @item.Comment
+                    }
+                    else
+                    {
+                        @item.ModeratedComment
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BlogPost!.Slug)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="SoftDelete" asp-route-id="@item.Id, @item.BlogPost.Slug">Delete</a>
+                    }
+
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

@@ -179,6 +179,7 @@ namespace GenesisBlogTakeTwo.Controllers
         }
 
         // GET: BlogPosts/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(string slug)
         {
             if (string.IsNullOrEmpty(slug))

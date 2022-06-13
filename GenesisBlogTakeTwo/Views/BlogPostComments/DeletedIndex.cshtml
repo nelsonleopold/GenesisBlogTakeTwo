@@ -1,0 +1,52 @@
+﻿@model IEnumerable<GenesisBlogTakeTwo.Models.BlogPostComment>
+
+@{
+    ViewData["Title"] = "Deleted Index";
+}
+
+<h1>Deleted Index</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Comment)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BlogPost)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                @*<td>
+                    @Html.DisplayFor(modelItem => item.Comment)
+                </td>*@
+                <td>
+                     @if (item.Moderated is null)
+                    {
+                        @item.Comment
+                    }
+                    else
+                    {
+                        @item.ModeratedComment
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BlogPost!.Slug)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="SoftDelete" asp-route-id="@item.Id, @item.BlogPost.Slug">Delete</a>
+                    }
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

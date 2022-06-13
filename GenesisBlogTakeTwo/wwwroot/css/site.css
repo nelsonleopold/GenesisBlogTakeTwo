@@ -20,3 +20,12 @@ body {
 .btn-logout {
     font-size: 0.75rem;
 }
+
+#quillEditor {
+    height: 50em;
+}
+
+#blogDropdownMenuButton {
+    background-color: blue;
+    z-index:1001;
+}

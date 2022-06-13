@@ -14,7 +14,8 @@
             {
                 <!-- Post preview -->
                 <div class="post-preview">
-                    <a asp-controller="BlogPosts" asp-action="Details" asp-route-id="@blogPost.Id">
+                    <a asp-controller="BlogPosts" asp-action="Details" asp-route-slug="@blogPost.Slug">
+                        
                         <h2 class="post-title">@blogPost.Title</h2>
                         <h3 class="post-subtitle">@blogPost.Abstract</h3>
                     </a>
